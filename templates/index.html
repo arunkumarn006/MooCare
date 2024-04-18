@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cattle Health Monitoring System</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-4">Cattle Health Monitoring System</h1>
+        <div id="cattleInfo">
+            {% for cattle in cattle_data %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ cattle.name }}</h5>
+                    <p class="card-text"><strong>Temperature:</strong> {{ cattle.temperature }} °C</p>
+                    <p class="card-text"><strong>Weight:</strong> {{ cattle.weight }} kg</p>
+                    <p class="card-text"><strong>Status:</strong> {{ cattle.status }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
