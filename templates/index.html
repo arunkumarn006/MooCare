@@ -4,24 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cattle Health Monitoring System</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Style for the buttons */
+        .alert-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Style for the green button */
+        .green {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+
+        /* Style for the red button */
+        .red {
+            background-color: #f44336;
+            color: white;
+            border: none;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="mt-5 mb-4">Cattle Health Monitoring System</h1>
-        <div id="cattleInfo">
-            {% for cattle in cattle_data %}
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">{{ cattle.name }}</h5>
-                    <p class="card-text"><strong>Temperature:</strong> {{ cattle.temperature }} °C</p>
-                    <p class="card-text"><strong>Weight:</strong> {{ cattle.weight }} kg</p>
-                    <p class="card-text"><strong>Status:</strong> {{ cattle.status }}</p>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    <p>Developed By AAB</p>
+    <h1>Cattle Health Monitoring System</h1>
+    
+    <!-- Green alert button for safe status -->
+    <button class="alert-button green" onclick="alert('Cattle health: Safe')">Green Alert (Safe)</button>
+
+    <!-- Red alert button for danger status -->
+    <button class="alert-button red" onclick="alert('Cattle health: Danger')">Red Alert (Danger)</button>
 </body>
 </html>
