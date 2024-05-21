@@ -1,17 +1,19 @@
-from flask import Flask, render_template
+
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Sample cattle health data
-cattle_data = [
-    {"id": 1, "name": "Cow 10", "temperature": 38.5, "weight": 450, "status": "Healthy"},
-    {"id": 2, "name": "Cow 2", "temperature": 39, "weight": 480, "status": "Sick"},
-    {"id": 3, "name": "Cow 3", "temperature": 37.8, "weight": 420, "status": "Healthy"}
-]
+sensor_data = {}
 
-@app.route('/')
-def index():
-    return render_template('index.html', cattle_data=cattle_data)
+@app.route('/api/sensor-data', methods=['POST'])
+def receive_sensor_data():
+    global sensor_data
+    sensor_data = request.json
+    return 'Sensor data received', 200
+
+@app.route('/api/sensor-data', methods=['GET'])
+def get_sensor_data():
+    return jsonify(sensor_data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
