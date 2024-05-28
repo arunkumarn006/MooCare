@@ -1,43 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Sensor Data Dashboard</title>
-  <style>
-    .data-container {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .data {
-      margin: 10px 0;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MooCare Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-  <div class="data-container">
-    <h1>Sensor Data</h1>
-    <div class="data" id="ir">IR: </div>
-    <div class="data" id="red">Red: </div>
-    <div class="data" id="ecg">ECG: </div>
-    <div class="data" id="gps">GPS: </div>
-    <div class="data" id="mmwave">mmWave: </div>
+  <div class="container">
+    <h1>MooCare Health Monitoring Dashboard</h1>
+    <div class="card">
+      <h2>Heart Rate (IR Value)</h2>
+      <p id="irValue">Loading...</p>
+    </div>
+    <div class="card">
+      <h2>Blood Oxygen Level (Red Value)</h2>
+      <p id="redValue">Loading...</p>
+    </div>
+    <div class="card">
+      <h2>ECG Value</h2>
+      <p id="ecgValue">Loading...</p>
+    </div>
+    <div class="card">
+      <h2>Location</h2>
+      <p id="location">Loading...</p>
+    </div>
   </div>
 
-  <script>
-    async function fetchSensorData() {
-      try {
-        const response = await fetch('/api/sensor-data');
-        const data = await response.json();
-        document.getElementById('ir').innerText = 'IR: ' + data.ir;
-        document.getElementById('red').innerText = 'Red: ' + data.red;
-        document.getElementById('ecg').innerText = 'ECG: ' + data.ecg;
-        document.getElementById('gps').innerText = 'GPS: ' + data.gps;
-        document.getElementById('mmwave').innerText = 'mmWave: ' + data.mmwave;
-      } catch (error) {
-        console.error('Error fetching sensor data:', error);
-      }
-    }
-
-    setInterval(fetchSensorData, 1000);
-  </script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
