@@ -1,10 +1,4 @@
 flask
 gunicorn
-
 templates
-  
-  static
-  
-  cert.pem
-  key.pem
-  app.py
+static
