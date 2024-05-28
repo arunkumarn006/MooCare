@@ -1,86 +1,92 @@
+#include <MAX30105.h>
+#include <heartRate.h>
+#include <spo2_algorithm.h>
+#include <Wire.h>
+#include <TinyGPS++.h>
+#include <HardwareSerial.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <Wire.h>
-#include "MAX30105.h"
-#include <SoftwareSerial.h>
-#include <TinyGPS++.h>
 
 // WiFi credentials
-const char* ssid = "your_SSID";
-const char* password = "your_PASSWORD";
+const char* ssid = "moocare";
+const char* password = "12345678";
 
-// Server URL
-const char* serverName = "https://moocare.onrender.com/"; // Replace with your server IP
+// Server endpoint
+const char* serverName = "http://localhost:5000/api/data"; // Replace YOUR_SERVER_IP with the IP address of your server
 
 // MAX30102
-MAX30105 particleSensor;
+MAX30105 max30105;
 
 // AD8232
-const int AD8232_PIN = 36;
+const int ad8232Pin = 36;
 
-// NEO-M8N GPS
+// TinyGPS++
 TinyGPSPlus gps;
-SoftwareSerial gpsSerial(17, 16); // RX, TX
+HardwareSerial gpsSerial(1);
 
-// Seeed Studio 24GHz mmWave Sensor
-SoftwareSerial mmWaveSerial(1, 3); // RX, TX
+// WiFi client
+WiFiClient client;
+HTTPClient http;
 
 void setup() {
   Serial.begin(115200);
-  WiFi.begin(ssid, password);
+  Wire.begin();
 
+  // Initialize MAX30102
+  if (!max30105.begin(Wire, I2C_SPEED_FAST)) {
+    Serial.println("MAX30102 not found. Please check wiring/power.");
+    while (1);
+  }
+  max30105.setup();
+
+  // Initialize AD8232
+  pinMode(ad8232Pin, INPUT);
+
+  // Initialize GPS
+  gpsSerial.begin(9600, SERIAL_8N1, 16, 17);
+
+  // Connect to WiFi
+  WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Connecting to WiFi...");
   }
   Serial.println("Connected to WiFi");
-
-  Wire.begin();
-  
-  // Initialize MAX30102
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
-    Serial.println("MAX30105 not found. Check wiring/power.");
-    while (1);
-  }
-  particleSensor.setup();
-  
-  // Initialize AD8232
-  pinMode(AD8232_PIN, INPUT);
-  
-  // Initialize GPS
-  gpsSerial.begin(9600);
-  
-  // Initialize mmWave Sensor
-  mmWaveSerial.begin(115200);
 }
 
 void loop() {
-  long irValue = particleSensor.getIR();
-  long redValue = particleSensor.getRed();
-  int ecgValue = analogRead(AD8232_PIN);
-  String gpsData = "";
-  if (gpsSerial.available() > 0) {
-    gps.encode(gpsSerial.read());
-    if (gps.location.isUpdated()) {
-      gpsData = String(gps.location.lat(), 6) + "," + String(gps.location.lng(), 6);
-    }
-  }
-  String mmWaveData = "";
-  if (mmWaveSerial.available() > 0) {
-    mmWaveData = mmWaveSerial.readStringUntil('\n');
-  }
-  
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(serverName);
-    http.addHeader("Content-Type", "application/json");
-    
-    String jsonData = "{\"ir\":" + String(irValue) + 
-                      ", \"red\":" + String(redValue) + 
-                      ", \"ecg\":" + String(ecgValue) + 
-                      ", \"gps\":\"" + gpsData + 
-                      "\", \"mmwave\":\"" + mmWaveData + "\"}";
+  // Read data from MAX30102
+  long irValue = max30105.getIR();
+  long redValue = max30105.getRed();
 
+  // Read data from AD8232
+  int ecgValue = analogRead(ad8232Pin);
+
+  // Read data from GPS
+  while (gpsSerial.available() > 0) {
+    gps.encode(gpsSerial.read());
+  }
+
+  // Prepare data
+  String jsonData = "{";
+  jsonData += "\"ir\": " + String(irValue) + ",";
+  jsonData += "\"red\": " + String(redValue) + ",";
+  jsonData += "\"ecg\": " + String(ecgValue) + ",";
+  if (gps.location.isValid()) {
+    jsonData += "\"lat\": " + String(gps.location.lat(), 6) + ",";
+    jsonData += "\"lon\": " + String(gps.location.lng(), 6);
+  } else {
+    jsonData += "\"lat\": null,";
+    jsonData += "\"lon\": null";
+  }
+  jsonData += "}";
+
+  
+
+  // Send data to server
+  if (WiFi.status() == WL_CONNECTED) {
+    http.begin(client, serverName);
+    http.addHeader("Content-Type", "application/json");
     int httpResponseCode = http.POST(jsonData);
     if (httpResponseCode > 0) {
       String response = http.getString();
@@ -91,6 +97,9 @@ void loop() {
       Serial.println(httpResponseCode);
     }
     http.end();
+  } else {
+    Serial.println("WiFi Disconnected");
   }
+
   delay(1000);
 }
