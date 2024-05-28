@@ -1,6 +1,6 @@
 flask
 gunicorn
-/moocare
+
   ├── templates
   │   └── index.html
   ├── static
