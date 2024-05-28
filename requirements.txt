@@ -4,8 +4,7 @@ gunicorn
 templates
   
   static
-  styles.css
-  script.js
+  
   cert.pem
-   key.pem
-   app.py
+  key.pem
+  app.py
