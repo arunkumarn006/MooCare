@@ -12,7 +12,7 @@ const char* ssid = "moocare";
 const char* password = "12345678";
 
 // Server endpoint
-const char* serverName = "http://localhost:5000/api/data"; // Replace YOUR_SERVER_IP with the IP address of your server
+const char* serverName = "https://moocare.onrender.com/api/data"; // Replace YOUR_SERVER_IP with the IP address of your server
 
 // MAX30102
 MAX30105 max30105;
