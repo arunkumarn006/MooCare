@@ -1,2 +1,9 @@
 flask
 gunicorn
+/moocare
+  ├── templates
+  │   └── index.html
+  ├── static
+  │   ├── styles.css
+  │   └── script.js
+  └── app.py
