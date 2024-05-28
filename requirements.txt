@@ -6,4 +6,6 @@ gunicorn
   ├── static
   │   ├── styles.css
   │   └── script.js
+  ├── cert.pem
+  ├── key.pem
   └── app.py
