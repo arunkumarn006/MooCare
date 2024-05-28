@@ -1,11 +1,11 @@
 flask
 gunicorn
 
-  ├── templates
-  │   └── index.html
-  ├── static
-  │   ├── styles.css
-  │   └── script.js
-  ├── cert.pem
-  ├── key.pem
-  └── app.py
+templates
+  index.html
+  static
+  styles.css
+  script.js
+  cert.pem
+   key.pem
+   app.py
