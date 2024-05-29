@@ -2,3 +2,4 @@ flask
 gunicorn
 templates
 static
+flask_sqlalchemy
