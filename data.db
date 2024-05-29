@@ -1,0 +1,11 @@
+CREATE TABLE sensor_data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    irValue INTEGER,
+    redValue INTEGER,
+    beatsPerMinute REAL,
+    beatAvg REAL,
+    ad8232Value INTEGER,
+    latitude REAL,
+    longitude REAL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);

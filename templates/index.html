@@ -1,43 +1,19 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="UTF-8">
     <title>Sensor Data</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
-    <div class="container">
-        <h1 class="mt-5">Sensor Data</h1>
-        <table class="table table-bordered mt-3">
-            <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>IR Value</th>
-                    <th>Red Value</th>
-                    <th>BPM</th>
-                    <th>Avg BPM</th>
-                    <th>AD8232 Value</th>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in data %}
-                <tr>
-                    <td>{{ row.timestamp }}</td>
-                    <td>{{ row.irValue }}</td>
-                    <td>{{ row.redValue }}</td>
-                    <td>{{ row.beatsPerMinute }}</td>
-                    <td>{{ row.beatAvg }}</td>
-                    <td>{{ row.ad8232Value }}</td>
-                    <td>{{ row.latitude }}</td>
-                    <td>{{ row.longitude }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <h1>Sensor Data</h1>
+    <ul>
+        <li>IR Value: {{ data[1] }}</li>
+        <li>Red Value: {{ data[2] }}</li>
+        <li>BPM: {{ data[3] }}</li>
+        <li>Avg BPM: {{ data[4] }}</li>
+        <li>AD8232 Value: {{ data[5] }}</li>
+        <li>Latitude: {{ data[6] }}</li>
+        <li>Longitude: {{ data[7] }}</li>
+    </ul>
 </body>
 </html>
