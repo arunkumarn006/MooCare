@@ -6,22 +6,25 @@ app = Flask(__name__)
 DATABASE = 'sensor_data.db'
 
 # Ensure the database is created
-if not os.path.exists(DATABASE):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE sensor_data (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            irValue INTEGER,
-            redValue INTEGER,
-            ad8232Value INTEGER,
-            latitude REAL,
-            longitude REAL
-        )
-    ''')
-    conn.commit()
-    conn.close()
+def init_db():
+    if not os.path.exists(DATABASE):
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute('''
+            CREATE TABLE sensor_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                irValue INTEGER,
+                redValue INTEGER,
+                beatsPerMinute REAL,
+                beatAvg REAL,
+                ad8232Value INTEGER,
+                latitude REAL,
+                longitude REAL
+            )
+        ''')
+        conn.commit()
+        conn.close()
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
@@ -34,6 +37,8 @@ def receive_data():
     
     irValue = data.get('irValue')
     redValue = data.get('redValue')
+    beatsPerMinute = data.get('beatsPerMinute')
+    beatAvg = data.get('beatAvg')
     ad8232Value = data.get('ad8232Value')
     latitude = data.get('latitude')
     longitude = data.get('longitude')
@@ -41,9 +46,9 @@ def receive_data():
     conn = get_db_connection()
     c = conn.cursor()
     c.execute('''
-        INSERT INTO sensor_data (irValue, redValue, ad8232Value, latitude, longitude)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (irValue, redValue, ad8232Value, latitude, longitude))
+        INSERT INTO sensor_data (irValue, redValue, beatsPerMinute, beatAvg, ad8232Value, latitude, longitude)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (irValue, redValue, beatsPerMinute, beatAvg, ad8232Value, latitude, longitude))
     conn.commit()
     conn.close()
     
@@ -60,4 +65,5 @@ def view_data():
     return render_template('view.html', data=data)
 
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True)

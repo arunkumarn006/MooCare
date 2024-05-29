@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Sensor Data</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
     <div class="container">
@@ -15,6 +16,8 @@
                     <th>Timestamp</th>
                     <th>IR Value</th>
                     <th>Red Value</th>
+                    <th>BPM</th>
+                    <th>Avg BPM</th>
                     <th>AD8232 Value</th>
                     <th>Latitude</th>
                     <th>Longitude</th>
@@ -26,6 +29,8 @@
                     <td>{{ row.timestamp }}</td>
                     <td>{{ row.irValue }}</td>
                     <td>{{ row.redValue }}</td>
+                    <td>{{ row.beatsPerMinute }}</td>
+                    <td>{{ row.beatAvg }}</td>
                     <td>{{ row.ad8232Value }}</td>
                     <td>{{ row.latitude }}</td>
                     <td>{{ row.longitude }}</td>
