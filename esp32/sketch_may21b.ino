@@ -1,61 +1,106 @@
-from flask import Flask, request, jsonify, render_template
-from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
-import os
+#include <MAX30105.h>
+#include <heartRate.h>
+#include <spo2_algorithm.h>
+#include <Wire.h>
+#include <TinyGPS++.h>
+#include <HardwareSerial.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 
-app = Flask(__name__)
-CORS(app)  # Enable Cross-Origin Resource Sharing
+// WiFi credentials
+const char* ssid = "moocare";
+const char* password = "12345678";
 
-# Setup SQLite database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sensor_data.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+// Server endpoint
+const char* serverName = "https://moocare.onrender.com/api/data";
 
-# Database model
-class SensorData(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    ir = db.Column(db.Integer, nullable=False)
-    red = db.Column(db.Integer, nullable=False)
-    ecg = db.Column(db.Integer, nullable=False)
-    lat = db.Column(db.Float)
-    lon = db.Column(db.Float)
+// MAX30102
+MAX30105 max30105;
 
-# Create the database
-with app.app_context():
-    db.create_all()
+// AD8232
+const int ad8232Pin = 36;
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+// TinyGPS++
+TinyGPSPlus gps;
+HardwareSerial gpsSerial(1);
 
-@app.route('/api/data', methods=['POST'])
-def receive_data():
-    data = request.json
-    sensor_data = SensorData(
-        ir=data['ir'],
-        red=data['red'],
-        ecg=data['ecg'],
-        lat=data.get('lat'),
-        lon=data.get('lon')
-    )
-    db.session.add(sensor_data)
-    db.session.commit()
-    return '', 200
+// WiFi client
+WiFiClientSecure client;  // Use WiFiClientSecure for HTTPS
+HTTPClient http;
 
-@app.route('/api/data', methods=['GET'])
-def get_data():
-    sensor_data = SensorData.query.order_by(SensorData.id.desc()).first()
-    if sensor_data:
-        return jsonify({
-            'ir': sensor_data.ir,
-            'red': sensor_data.red,
-            'ecg': sensor_data.ecg,
-            'lat': sensor_data.lat,
-            'lon': sensor_data.lon
-        })
-    else:
-        return jsonify({}), 404
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+  // Initialize MAX30102
+  if (!max30105.begin(Wire, I2C_SPEED_FAST)) {
+    Serial.println("MAX30102 not found. Please check wiring/power.");
+    while (1);
+  }
+  max30105.setup();
+
+  // Initialize AD8232
+  pinMode(ad8232Pin, INPUT);
+
+  // Initialize GPS
+  gpsSerial.begin(9600, SERIAL_8N1, 3, 1);
+
+  // Connect to WiFi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
+  
+  // Configure the WiFiClientSecure
+  client.setInsecure();  // This is not recommended for production use. In production, you should validate the server's certificate.
+}
+
+void loop() {
+  // Read data from MAX30102
+  long irValue = max30105.getIR();
+  long redValue = max30105.getRed();
+
+  // Read data from AD8232
+  int ecgValue = analogRead(ad8232Pin);
+
+  // Read data from GPS
+  while (gpsSerial.available() > 0) {
+    gps.encode(gpsSerial.read());
+  }
+
+  // Prepare data
+  String jsonData = "{";
+  jsonData += "\"ir\": " + String(irValue) + ",";
+  jsonData += "\"red\": " + String(redValue) + ",";
+  jsonData += "\"ecg\": " + String(ecgValue) + ",";
+  if (gps.location.isValid()) {
+    jsonData += "\"lat\": " + String(gps.location.lat(), 6) + ",";
+    jsonData += "\"lon\": " + String(gps.location.lng(), 6);
+  } else {
+    jsonData += "\"lat\": null,";
+    jsonData += "\"lon\": null";
+  }
+  jsonData += "}";
+
+  // Send data to server
+  if (WiFi.status() == WL_CONNECTED) {
+    http.begin(client, serverName);
+    http.addHeader("Content-Type", "application/json");
+    int httpResponseCode = http.POST(jsonData);
+    if (httpResponseCode > 0) {
+      String response = http.getString();
+      Serial.println(httpResponseCode);
+      Serial.println(response);
+    } else {
+      Serial.print("Error on sending POST: ");
+      Serial.println(httpResponseCode);
+    }
+    http.end();
+  } else {
+    Serial.println("WiFi Disconnected");
+  }
+
+  delay(1000);
+}
