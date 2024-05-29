@@ -1,32 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MooCare Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cattle Health Monitoring System</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>MooCare Health Monitoring Dashboard</h1>
-    <div class="card">
-      <h2>Heart Rate (IR Value)</h2>
-      <p id="irValue">Loading...</p>
+    <h1>Cattle Health Monitoring System</h1>
+    <div id="sensorData">
+        <!-- Sensor data will be displayed here -->
     </div>
-    <div class="card">
-      <h2>Blood Oxygen Level (Red Value)</h2>
-      <p id="redValue">Loading...</p>
-    </div>
-    <div class="card">
-      <h2>ECG Value</h2>
-      <p id="ecgValue">Loading...</p>
-    </div>
-    <div class="card">
-      <h2>Location</h2>
-      <p id="location">Loading...</p>
-    </div>
-  </div>
-
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

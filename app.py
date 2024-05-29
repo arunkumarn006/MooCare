@@ -1,52 +1,32 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request
+import sqlite3
 
 app = Flask(__name__)
 
-# Configure database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
-db = SQLAlchemy(app)
+# Database setup
+conn = sqlite3.connect('sensor_data.db')
+c = conn.cursor()
+c.execute('''CREATE TABLE IF NOT EXISTS sensor_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ad8232 FLOAT, gps_lat FLOAT, gps_long FLOAT)''')
+conn.commit()
+conn.close()
 
-# Define the data model
-class SensorData(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    ir = db.Column(db.Float, nullable=False)
-    red = db.Column(db.Float, nullable=False)
-    ecg = db.Column(db.Integer, nullable=False)
-    lat = db.Column(db.Float, nullable=True)
-    lon = db.Column(db.Float, nullable=True)
-
-# Create the database tables
-with app.app_context():
-    db.create_all()
-
-# Define the route for POSTing data
-@app.route('/api/data', methods=['POST'])
-def post_data():
-    data = request.get_json()
-    ir = data['ir']
-    red = data['red']
-    ecg = data['ecg']
-    lat = data['lat']
-    lon = data['lon']
-    new_entry = SensorData(ir=ir, red=red, ecg=ecg, lat=lat, lon=lon)
-    db.session.add(new_entry)
-    db.session.commit()
-    return jsonify({'message': 'Data received'}), 201
-
-# Define the route for GETting data
-@app.route('/api/data', methods=['GET'])
-def get_data():
-    results = SensorData.query.all()
-    data = [{
-        'id': result.id,
-        'ir': result.ir,
-        'red': result.red,
-        'ecg': result.ecg,
-        'lat': result.lat,
-        'lon': result.lon
-    } for result in results]
-    return jsonify(data), 200
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        ad8232 = request.json.get('ad8232')
+        gps_lat = request.json.get('gps_lat')
+        gps_long = request.json.get('gps_long')
+        
+        # Store data in database
+        conn = sqlite3.connect('sensor_data.db')
+        c = conn.cursor()
+        c.execute("INSERT INTO sensor_data (ad8232, gps_lat, gps_long) VALUES (?, ?, ?)", (ad8232, gps_lat, gps_long))
+        conn.commit()
+        conn.close()
+        
+        return 'Data received successfully', 200
+    else:
+        return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
