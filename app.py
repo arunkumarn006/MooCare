@@ -1,32 +1,63 @@
-from flask import Flask, render_template, request
+from flask import Flask, request, jsonify, render_template
 import sqlite3
+import os
 
 app = Flask(__name__)
+DATABASE = 'sensor_data.db'
 
-# Database setup
-conn = sqlite3.connect('sensor_data.db')
-c = conn.cursor()
-c.execute('''CREATE TABLE IF NOT EXISTS sensor_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ad8232 FLOAT, gps_lat FLOAT, gps_long FLOAT)''')
-conn.commit()
-conn.close()
+# Ensure the database is created
+if not os.path.exists(DATABASE):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE sensor_data (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            irValue INTEGER,
+            redValue INTEGER,
+            ad8232Value INTEGER,
+            latitude REAL,
+            longitude REAL
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        ad8232 = request.json.get('ad8232')
-        gps_lat = request.json.get('gps_lat')
-        gps_long = request.json.get('gps_long')
-        
-        # Store data in database
-        conn = sqlite3.connect('sensor_data.db')
-        c = conn.cursor()
-        c.execute("INSERT INTO sensor_data (ad8232, gps_lat, gps_long) VALUES (?, ?, ?)", (ad8232, gps_lat, gps_long))
-        conn.commit()
-        conn.close()
-        
-        return 'Data received successfully', 200
-    else:
-        return render_template('index.html')
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+@app.route('/data', methods=['POST'])
+def receive_data():
+    data = request.get_json()
+    
+    irValue = data.get('irValue')
+    redValue = data.get('redValue')
+    ad8232Value = data.get('ad8232Value')
+    latitude = data.get('latitude')
+    longitude = data.get('longitude')
+    
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO sensor_data (irValue, redValue, ad8232Value, latitude, longitude)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (irValue, redValue, ad8232Value, latitude, longitude))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'status': 'success'}), 201
+
+@app.route('/view')
+def view_data():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT * FROM sensor_data ORDER BY timestamp DESC')
+    data = c.fetchall()
+    conn.close()
+    
+    return render_template('view.html', data=data)
 
 if __name__ == '__main__':
     app.run(debug=True)

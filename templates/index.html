@@ -1,15 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cattle Health Monitoring System</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Sensor Data</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Cattle Health Monitoring System</h1>
-    <div id="sensorData">
-        <!-- Sensor data will be displayed here -->
+    <div class="container">
+        <h1 class="mt-5">Sensor Data</h1>
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>IR Value</th>
+                    <th>Red Value</th>
+                    <th>AD8232 Value</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row.timestamp }}</td>
+                    <td>{{ row.irValue }}</td>
+                    <td>{{ row.redValue }}</td>
+                    <td>{{ row.ad8232Value }}</td>
+                    <td>{{ row.latitude }}</td>
+                    <td>{{ row.longitude }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </body>
 </html>
