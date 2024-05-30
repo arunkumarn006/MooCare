@@ -4,3 +4,4 @@ templates
 static
 flask_sqlalchemy
 flask_cors
+favicon.ico
