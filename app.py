@@ -1,5 +1,6 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, send_from_directory
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
@@ -26,6 +27,11 @@ def receive_data():
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     return jsonify({"status": "success"}), 200
+
+# Route to serve the favicon
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, ''), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 if __name__ == '__main__':
     app.run(debug=True)
