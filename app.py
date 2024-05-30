@@ -1,25 +1,31 @@
-from flask import Flask, render_template, jsonify
-import sqlite3
+from flask import Flask, request, render_template, jsonify
+from datetime import datetime
 
 app = Flask(__name__)
 
-def get_data():
-    conn = sqlite3.connect('data.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM sensor_data ORDER BY timestamp DESC LIMIT 1")
-    data = cursor.fetchone()
-    conn.close()
-    return data
+# Initialize a global variable to store the latest data
+latest_data = {
+    "heartRate": 0,
+    "spo2": 0,
+    "status": "Unknown",
+    "timestamp": None
+}
 
 @app.route('/')
 def index():
-    data = get_data()
-    return render_template('index.html', data=data)
+    return render_template('index.html', data=latest_data)
 
-@app.route('/data')
-def data():
-    data = get_data()
-    return jsonify(data)
+@app.route('/data', methods=['POST'])
+def receive_data():
+    global latest_data
+    data = request.get_json()
+    latest_data = {
+        "heartRate": data.get('heartRate', 0),
+        "spo2": data.get('spo2', 0),
+        "status": data.get('status', 'Unknown'),
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    return jsonify({"status": "success"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

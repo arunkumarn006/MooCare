@@ -1,19 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Sensor Data</title>
+    <title>Cow Health Monitor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        .container {
+            text-align: center;
+        }
+        .data {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        h1 {
+            font-size: 2em;
+            color: #333;
+        }
+        p {
+            font-size: 1.2em;
+        }
+    </style>
 </head>
 <body>
-    <h1>Sensor Data</h1>
-    <ul>
-        <li>IR Value: {{ data[1] }}</li>
-        <li>Red Value: {{ data[2] }}</li>
-        <li>BPM: {{ data[3] }}</li>
-        <li>Avg BPM: {{ data[4] }}</li>
-        <li>AD8232 Value: {{ data[5] }}</li>
-        <li>Latitude: {{ data[6] }}</li>
-        <li>Longitude: {{ data[7] }}</li>
-    </ul>
+    <div class="container">
+        <h1>Cow Health Monitor</h1>
+        <div class="data">
+            <p><strong>Heart Rate:</strong> {{ data['heartRate'] }} BPM</p>
+            <p><strong>SpO2:</strong> {{ data['spo2'] }}%</p>
+            <p><strong>Status:</strong> {{ data['status'] }}</p>
+            <p><strong>Last Updated:</strong> {{ data['timestamp'] }}</p>
+        </div>
+    </div>
 </body>
 </html>
