@@ -3,4 +3,3 @@ gunicorn
 templates
 static
 flask_sqlalchemy
-favicon.ico
