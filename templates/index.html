@@ -1,41 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Cow Health Monitor</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 50px;
-        }
-        .container {
-            text-align: center;
-        }
-        .data {
-            margin: 20px;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            display: inline-block;
-        }
-        h1 {
-            font-size: 2em;
-            color: #333;
-        }
-        p {
-            font-size: 1.2em;
-        }
-    </style>
+    <title>Flask-SocketIO Example</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const socket = io();
+
+            socket.on('connect', () => {
+                console.log('Connected to server');
+            });
+
+            socket.on('update', (data) => {
+                console.log('Data received:', data);
+                document.getElementById('hr').textContent = data.hr;
+                document.getElementById('spo2').textContent = data.spo2;
+                document.getElementById('status').textContent = data.status;
+            });
+        });
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Cow Health Monitor</h1>
-        <div class="data">
-            <p><strong>Heart Rate:</strong> {{ data['heartRate'] }} BPM</p>
-            <p><strong>SpO2:</strong> {{ data['spo2'] }}%</p>
-            <p><strong>Status:</strong> {{ data['status'] }}</p>
-            <p><strong>Last Updated:</strong> {{ data['timestamp'] }}</p>
-        </div>
-    </div>
+    <h1>Flask-SocketIO Example</h1>
+    <p>Hr: <span id="hr">{{ hr }}</span></p>
+    <p>SpO2: <span id="spo2">{{ spo2 }}</span></p>
+    <p>Status: <span id="status">{{ status }}</span></p>
 </body>
 </html>

@@ -1,8 +1,9 @@
+#include <WiFi.h>
+#include <WiFiClient.h>
 #include <Wire.h>
 #include <MAX30105.h>
 #include <heartRate.h>
 #include <spo2_algorithm.h>
-#include <WiFi.h>
 #include <HTTPClient.h>
 
 MAX30105 particleSensor;
@@ -22,26 +23,26 @@ int8_t validSPO2; // SPO2 validity
 int32_t heartRate; // Heart rate value
 int8_t validHeartRate; // Heart rate validity
 
-// Replace with your network credentials
-const char* ssid = "moo";
-const char* password = "12345678";
+const char* ssid = "Thanay";
+const char* password = "1234567890";
 
-const char* serverName = "https://moocare.onrender.com/data";
-const int httpPort = 5001;
+const char* host = "192.168.43.246"; // IP address of your Flask server
+const int httpPort = 5001; // Port of the Flask server
 
 void setup() {
   Serial.begin(115200);
-  delay(100);
-
-  // Initialize WiFi
   WiFi.begin(ssid, password);
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Connecting to WiFi...");
   }
+
   Serial.println("Connected to WiFi");
 
-  // Initialize MAX30102
+  Serial.print("Connecting to ");
+  Serial.println(host);
+
   if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
     Serial.println("MAX30102 was not found. Please check wiring/power.");
     while (1);
@@ -49,6 +50,7 @@ void setup() {
   particleSensor.setup(); // Configure sensor with default settings
 
   Serial.println("Place your finger on the sensor to start reading...");
+
 }
 
 void loop() {
@@ -82,33 +84,38 @@ void loop() {
   Serial.print("HR: "); Serial.print(heartRate);
   Serial.print(", SpO2: "); Serial.print(spo2);
   Serial.print(", Status: "); Serial.println(cowStatus);
+  WiFiClient client;
 
-  // Send data to server
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(serverName);
-    http.addHeader("Content-Type", "application/json");
-
-    // Prepare JSON payload
-    String jsonPayload = "{";
-    jsonPayload += "\"heartRate\": " + String(heartRate) + ",";
-    jsonPayload += "\"spo2\": " + String(spo2) + ",";
-    jsonPayload += "\"status\": \"" + cowStatus + "\"";
-    jsonPayload += "}";
-
-    int httpResponseCode = http.POST(jsonPayload);
-
-    if (httpResponseCode > 0) {
-      String response = http.getString();
-      Serial.println(httpResponseCode);
-      Serial.println(response);
-    } else {
-      Serial.print("Error on sending POST: ");
-      Serial.println(httpResponseCode);
-    }
-
-    http.end();
+  if (!client.connect(host, httpPort)) {
+    Serial.println("Connection failed");
+    return;
   }
 
-  delay(5000); // Send data every 5 seconds
+  String url = "/";
+  String postData = "hr=" + String(heartRate) + "&spo2=" + String(spo2) + "&status=" + String(cowStatus);
+
+  client.println("POST " + url + " HTTP/1.1");
+  client.println("Host: " + String(host));
+  client.println("User-Agent: ESP32");
+  client.println("Connection: close");
+  client.println("Content-Type: application/x-www-form-urlencoded");
+  client.print("Content-Length: ");
+  client.println(postData.length());
+  client.println();
+  client.println(postData);
+
+  while (client.connected()) {
+    String line = client.readStringUntil('\n');
+    if (line == "\r") {
+      Serial.println("Headers received");
+      break;
+    }
+  }
+
+  String line = client.readStringUntil('\n');
+  Serial.println("Reply was:");
+  Serial.println("==========");
+  Serial.println(line);
+  Serial.println("==========");
+  Serial.println("Closing connection");
 }
